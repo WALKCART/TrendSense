@@ -7,5 +7,5 @@ The need for such a tool arose while we were researching topics for ENIGMA, the 
 
 TrendSense was created to solve this problem by analyzing ongoing trends, understanding their trajectory, and estimating which ones are likely to persist — helping writers choose topics with long-term relevance.
 
-## TrendSense Architectrure
+## TrendSense Architecture
 ![Architecture.png](Architecture.png)
