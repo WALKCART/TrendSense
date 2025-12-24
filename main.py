@@ -31,6 +31,8 @@ while True:
                 entry=ind
             )
             print(summ)
+            print()
+            print(sources[source_ind])
         case '2':
             centerPrint('Thank You for using TrendSense!')
             break

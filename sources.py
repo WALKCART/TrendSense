@@ -1,7 +1,7 @@
 import pandas as pd
 
 sources = {
-    'title': ['livemint'] * 2 + ['business_standard'] * 8 + ['economic_times'] * 2,
+    'title': ['livemint'] * 2 + ['business_standard'] * 8 + ['economic_times'] * 5,
     'section': ['markets', 
                 'companies',
                 'world_news',
@@ -13,7 +13,10 @@ sources = {
                 'markets',
                 'budget',
                 'markets',
-                'technology'
+                'technology',
+                'ipo',
+                'ai',
+                'industry-auto'
                 ],
     'link': ['https://www.livemint.com/rss/markets',
              'https://www.livemint.com/rss/companies',
@@ -26,7 +29,10 @@ sources = {
              'https://www.business-standard.com/rss/markets-106.rss',
              'https://www.business-standard.com/rss/budget-110.rss',
              'https://economictimes.indiatimes.com/markets/rssfeeds/1977021501.cms',
-             'https://economictimes.indiatimes.com/tech/rssfeeds/13357270.cms'
+             'https://economictimes.indiatimes.com/tech/rssfeeds/13357270.cms',
+             'https://economictimes.indiatimes.com/ipo/rssfeeds/125432745.cms',
+             'https://economictimes.indiatimes.com/ai/rssfeeds/119215726.cms',
+             'https://economictimes.indiatimes.com/industry/auto/rssfeeds/13359412.cms'
              ]
 }
 
