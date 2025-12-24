@@ -1,4 +1,4 @@
-from retrieval import load_sources, get_summary
+from scraper.retrieval import load_sources, get_summary
 from prettyPrint import centerPrint, divPrint
 import os
 sources = load_sources()

@@ -1,9 +1,10 @@
-from RSS import RSSSource
+from scraper.RSS import RSSSource
 import pandas as pd
 import feedparser
+import os
 
 def load_sources():
-    db = pd.read_csv('sources.csv')
+    db = pd.read_csv(os.path.join('scraper', 'sources.csv'))
     sources = []
 
     for rowInd, ser in db.iterrows():
