@@ -1,8 +1,12 @@
-from scraper.retrieval import load_sources, get_summary
+from scraper.retrieval import *
 from prettyPrint import centerPrint, divPrint
 import os
 sources = load_sources()
-menus = '0: List Sources\n1: Get Summary\n2: Exit'
+menus = ''
+menus += '0: List Sources\n'
+menus += '1: Get Summary\n'
+menus += '2: Get New Articles\n'
+menus += '3: Exit'
 
 #printing the title 
 text = ''
@@ -17,12 +21,12 @@ while True:
     inp = input('>>> ')
     match inp:
         case '0':
-            titles = list(map(
-                lambda x: f'{x.title}_{x.section}',
+            sites = list(map(
+                lambda x: f'{x.site}_{x.section}',
                 sources
             ))
-            for ind in range(len(titles)):
-                print(f'{ind}: {titles[ind]}')
+            for ind in range(len(sites)):
+                print(f'{ind}: {sites[ind]}')
         case '1':
             source_ind = int(input('Enter Source Index: '))
             ind = int(input('Enter Entry Index: '))
@@ -34,6 +38,12 @@ while True:
             print()
             print(sources[source_ind])
         case '2':
+            p = input('Enter path to save: ')
+            get_new(
+                sources=sources, 
+                p=p
+            )
+        case '3':
             centerPrint('Thank You for using TrendSense!')
             break
         case _:

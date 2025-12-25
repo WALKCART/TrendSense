@@ -1,7 +1,7 @@
 import pandas as pd
 
 sources = {
-    'title': ['livemint'] * 2 + ['business_standard'] * 8 + ['economic_times'] * 5,
+    'site': ['livemint'] * 2 + ['business_standard'] * 8 + ['economic_times'] * 5,
     'section': ['markets', 
                 'companies',
                 'world_news',

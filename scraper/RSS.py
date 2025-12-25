@@ -4,15 +4,15 @@ import feedparser
 
 @dataclass
 class RSSSource:
-    title: str = ''
+    site: str = ''
     section: str = ''
     url: str = '' 
 
     def load_from_series(self, ser: pd.Series):
-        self.title = ser['title']
+        self.site = ser.site
         self.section = ser.section
         self.url = ser.link
 
     def __str__(self):
-        return f'RSSSource(\n\ttitle: {self.title},\n\tsection: {self.section}\n\turl: {self.url}\n)'
+        return f'RSSSource(\n\tsite: {self.site},\n\tsection: {self.section}\n\turl: {self.url}\n)'
     
