@@ -6,7 +6,8 @@ menus = ''
 menus += '0: List Sources\n'
 menus += '1: Get Summary\n'
 menus += '2: Get New Articles\n'
-menus += '3: Exit'
+menus += '3: Save Article\n'
+menus += '4: Exit'
 
 #printing the title 
 text = ''
@@ -44,6 +45,16 @@ while True:
                 p=p
             )
         case '3':
+            source_ind = int(input('Enter Source Index: '))
+            ind = int(input('Enter Entry Index: '))
+            feed = feedparser.parse(sources[source_ind].url)
+            url = feed.entries[ind]['link']
+            
+            m = get_html(url)
+            body = get_text_from_html(m)
+            with open('article.txt', 'w') as file:
+                file.write(body)
+        case '4':
             centerPrint('Thank You for using TrendSense!')
             break
         case _:

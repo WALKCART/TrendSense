@@ -1,2 +1,4 @@
 feedparser
 pandas
+requests
+bs4

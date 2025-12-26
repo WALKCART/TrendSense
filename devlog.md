@@ -22,3 +22,9 @@
   - published_parsed
 - all the entries will be temporarily stored in a csv.
 - refactored `title` in sources.csv to `site`. Made changes in all the files.
+
+**26 December 2025**
+- Read [TutorialsPoint article](https://www.tutorialspoint.com/python_web_scraping/python_web_scraping_data_extraction.htm) on web scraping and html processing.
+- referred [BeautifulSoup Docs](https://www.crummy.com/software/BeautifulSoup/bs4/doc/#quick-start) for getting text from site.
+- wrote `get_html` func in `retrieval.py` to get html from article url.
+- write `get_text_from_html` func in `retrieval.py` to get article body from article html.

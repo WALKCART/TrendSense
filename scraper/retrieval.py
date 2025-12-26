@@ -2,6 +2,8 @@ from scraper.RSS import RSSSource
 import pandas as pd
 import feedparser
 import os
+import requests
+from bs4 import BeautifulSoup
 
 def load_sources():
     db = pd.read_csv(os.path.join('scraper', 'sources.csv'))
@@ -106,3 +108,20 @@ def get_new(sources: list, p: str):
     }).to_csv(p)
 
         
+def get_html(url: str):
+    r = requests.get(url)
+    return r.text
+
+def get_text_from_html(html: str):
+    soup = BeautifulSoup(html, 'html.parser')
+    paragraphs = soup.find_all("p")
+
+    content = []
+    for p in paragraphs:
+        text = p.get_text(strip=True)
+        if len(text) > 80:          # threshold for real content
+            if not p.find("a"):     # avoid nav-heavy text
+                content.append(text)
+
+    article_text = "\n".join(content)
+    return article_text
