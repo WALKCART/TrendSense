@@ -28,3 +28,4 @@
 - referred [BeautifulSoup Docs](https://www.crummy.com/software/BeautifulSoup/bs4/doc/#quick-start) for getting text from site.
 - wrote `get_html` func in `retrieval.py` to get html from article url.
 - write `get_text_from_html` func in `retrieval.py` to get article body from article html.
+- made `get_new()` func faster, added progress bar. `articles.csv` to now have the article body as well.

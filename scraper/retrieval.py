@@ -4,6 +4,7 @@ import feedparser
 import os
 import requests
 from bs4 import BeautifulSoup
+from tqdm import tqdm
 
 def load_sources():
     db = pd.read_csv(os.path.join('scraper', 'sources.csv'))
@@ -33,64 +34,28 @@ def get_new(sources: list, p: str):
     guidislink = []
     published = []
     published_parsed = []
+    body = []
 
 
-    for source in sources:
+    for source in tqdm(sources):
         feed = feedparser.parse(source.url)
         n = len(feed.entries)
 
         site.extend([source.site]*n)
         section.extend([source.section]*n)
 
-        title.extend(list(map(
-            lambda x: x.title,
-            feed.entries
-        )))
-
-        title_detail.extend(list(map(
-            lambda x: x.title_detail,
-            feed.entries
-        )))
-
-        summary.extend(list(map(
-            lambda x: x.summary,
-            feed.entries
-        )))
-
-        summary_detail.extend(list(map(
-            lambda x: x.summary_detail,
-            feed.entries
-        )))
-
-        links.extend(list(map(
-            lambda x: x.links,
-            feed.entries
-        )))
-
-        link.extend(list(map(
-            lambda x: x.link,
-            feed.entries
-        )))
-
-        ids.extend(list(map(
-            lambda x: x.id,
-            feed.entries
-        )))
-
-        guidislink.extend(list(map(
-            lambda x: x.guidislink,
-            feed.entries
-        )))
-
-        published.extend(list(map(
-            lambda x: x.published,
-            feed.entries
-        )))
-
-        published_parsed.extend(list(map(
-            lambda x: x.published_parsed,
-            feed.entries
-        )))
+        for entry in feed.entries:
+            title.append(entry.title)
+            title_detail.append(entry.title_detail)
+            summary.append(entry.summary)
+            summary_detail.append(entry.summary_detail)
+            links.append(entry.links)
+            link.append(entry.link)
+            ids.append(entry.id)
+            guidislink.append(entry.guidislink)
+            published.append(entry.published)
+            published_parsed.append(entry.published_parsed)
+            body.append(get_text_from_html(get_html(entry['link'])))
 
     pd.DataFrame({
         'site': site,
@@ -104,7 +69,8 @@ def get_new(sources: list, p: str):
         'id': ids, 
         'guidislink': guidislink,
         'published': published,
-        'published_parsed': published_parsed
+        'published_parsed': published_parsed,
+        'body': body
     }).to_csv(p)
 
         
