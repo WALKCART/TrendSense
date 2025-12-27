@@ -3,3 +3,6 @@ pandas
 requests
 bs4
 tqdm
+transformers 
+sentence-transformers
+numpy

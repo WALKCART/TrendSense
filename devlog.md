@@ -29,3 +29,11 @@
 - wrote `get_html` func in `retrieval.py` to get html from article url.
 - write `get_text_from_html` func in `retrieval.py` to get article body from article html.
 - made `get_new()` func faster, added progress bar. `articles.csv` to now have the article body as well.
+
+**27 December 2025**
+- started working on the clustering algo
+- decided to start with cosine similarity.
+- using the `all-MiniLM-L6-v2` model for getting embeddings.
+- wrote `get_cosine_similarity` func for getting cosine similarity.
+- replaced numpy code with torch code
+- made it device agnostic.
