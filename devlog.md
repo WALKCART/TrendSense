@@ -37,3 +37,5 @@
 - wrote `get_cosine_similarity` func for getting cosine similarity.
 - replaced numpy code with torch code
 - made it device agnostic.
+- vectorized the function so that all sentence pairs can be comapared at once.
+- wrote `get_clustering_inds` that returns the clusters.
