@@ -7,6 +7,7 @@ class ArticleCluster:
     '''
     streamlined way to access all articles in a cluster
     - lists the articles
+    - gives the cluster a title
     - has the relvancy score
     '''
     def __init__(
