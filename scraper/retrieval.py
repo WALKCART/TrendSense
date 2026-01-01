@@ -35,6 +35,7 @@ def get_new(sources: list, p: str):
     published = []
     published_parsed = []
     body = []
+    clustering_index = []
 
 
     for source in tqdm(sources):
@@ -56,6 +57,7 @@ def get_new(sources: list, p: str):
             published.append(entry.published)
             published_parsed.append(entry.published_parsed)
             body.append(get_text_from_html(get_html(entry['link'])))
+            clustering_index.append(pd.NA)
 
     pd.DataFrame({
         'site': site,
@@ -70,7 +72,8 @@ def get_new(sources: list, p: str):
         'guidislink': guidislink,
         'published': published,
         'published_parsed': published_parsed,
-        'body': body
+        'body': body,
+        'clustering_index': clustering_index
     }).to_csv(p)
 
         

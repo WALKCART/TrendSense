@@ -39,3 +39,8 @@
 - made it device agnostic.
 - vectorized the function so that all sentence pairs can be comapared at once.
 - wrote `get_clustering_inds` that returns the clusters.
+
+**01 Jan 2026**
+- finished the clustering indices generation algo.
+- tested it in rough.py and it works.
+- implemented the clustering indices algo into `main.py`
