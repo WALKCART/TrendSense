@@ -6,6 +6,7 @@ class clustringConfig:
     device: str = 'cpu'
     model: str = 'all-MiniLM-L6-v2'
     thresh: float = 0.5
+    minimum_articles = 5
 
 device = 'cpu'
 if torch.cuda.is_available(): device = 'cuda'

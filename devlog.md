@@ -44,3 +44,8 @@
 - finished the clustering indices generation algo.
 - tested it in rough.py and it works.
 - implemented the clustering indices algo into `main.py`
+- implemented the `ArticleCluster` class
+  - generates cluster title using gpt
+  - has all the articles in the cluster
+  - saved 5 clusters for sample (`rough.py`)
+  - updated CLI (`main.py`) with access to clustering titles.

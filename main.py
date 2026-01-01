@@ -1,11 +1,20 @@
 from scraper.retrieval import *
 from prettyPrint import centerPrint, divPrint
 from clustering.embedding import *
+from clustering.articles import *
+from clustering.textGenerator import warm_up
 import os
+import pandas as pd
+pd.set_option('display.max_rows', None)
+pd.set_option('display.max_columns', None)
+
 sources = load_sources()
 articles = pd.DataFrame()
 clustered = False
 p = 'articles.csv'
+warm_up()
+
+
 menus = ''
 menus += '0: List Sources\n'
 menus += '1: Get Summary\n'
@@ -50,23 +59,23 @@ while True:
                 p=p
             )
         case '3': 
-            articles = pd.read_csv(p)
-            # import code; code.interact(local=locals())
-            clusters = get_clustering_inds(articles.summary.replace(pd.NA, ''))
-            articles['clustering_index'] = clusters
-            articles.to_csv(p, index=False)
-            print('Added clustering indices to the articles!')
+            clusters = create_article_clusters(
+                db=pd.read_csv(p),
+                clustering_index_col='clustering_index'
+                )
+            for ind in range(len(clusters)):
+                print(f'{ind}: {clusters[ind]}')
+            save_clusters('clusters.csv', clusters=clusters)
             clustered = True
         case '4':
             if not clustered:
                 print('Clusters not assigned!')
                 print('Run Menu Option 3')
             else:
-                minim = articles.clustering_index.min()
-                maxim = articles.clustering_index.max()
-                print(f'Clustering index range: ({minim}-{maxim})')
+                print(f'Clustering index range: (0-{len(clusters)})')
                 cluster_ind = int(input('Clustering Ind: '))
-                print(articles[articles.clustering_index == cluster_ind])
+                print(clusters[cluster_ind])
+                print(clusters[cluster_ind].articles)
         case '5':
             centerPrint('Thank You for using TrendSense!')
             break

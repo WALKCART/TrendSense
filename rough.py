@@ -1,16 +1,18 @@
-from clustering.embedding import *
+from clustering.articles import *
+import pandas as pd
+from clustering.textGenerator import *
+from tqdm import tqdm
+warm_up()
 
-sent1 = pd.Series([
-    'I am admire you', #0
-    'I am so sad', #1
-    'I am so depressed', #1
-    'I respect you' #0
-])
+clusters = create_article_clusters(
+    pd.read_csv('articles.csv'),
+    clustering_index_col='clustering_index'
+)
 
-sent2 = pd.Series([
-    0, pd.NA, pd.NA, pd.NA
-])
+# print(*clusters, sep='\n\n')
+save_clusters(
+    p='clusters.csv',
+    clusters=clusters
+)
 
-# emb1 = get_embedding(sent1)
-# emb2 = get_embedding(sent2)
-print(get_clustering_inds(sent1))
+s = 0

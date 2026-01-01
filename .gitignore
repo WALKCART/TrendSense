@@ -4,3 +4,4 @@ __pycache__/
 dev/
 scraper/__pycache__/
 clustering/__pycache__/
+api_key.txt
