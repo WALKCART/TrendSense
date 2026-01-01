@@ -74,7 +74,7 @@ def get_new(sources: list, p: str):
         'published_parsed': published_parsed,
         'body': body,
         'clustering_index': clustering_index
-    }).to_csv(p)
+    }).to_csv(p, index=False)
 
         
 def get_html(url: str):

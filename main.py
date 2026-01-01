@@ -54,7 +54,7 @@ while True:
             # import code; code.interact(local=locals())
             clusters = get_clustering_inds(articles.summary.replace(pd.NA, ''))
             articles['clustering_index'] = clusters
-            articles.to_csv(p)
+            articles.to_csv(p, index=False)
             print('Added clustering indices to the articles!')
             clustered = True
         case '4':
