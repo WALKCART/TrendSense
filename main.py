@@ -58,7 +58,11 @@ while True:
                 sources=sources, 
                 p=p
             )
-        case '3': 
+        case '3':
+            articles = pd.read_csv(p)
+            inds = get_clustering_inds(sents=articles.summary) 
+            articles['clustering_index'] = inds
+            articles.to_csv(p, index=False)
             clusters = create_article_clusters(
                 db=pd.read_csv(p),
                 clustering_index_col='clustering_index'

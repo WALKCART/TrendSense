@@ -2,12 +2,16 @@ from openai import OpenAI
 import pandas as pd
 from transformers import pipeline
 import torch
+import os
 
 key = ''
 with open('api_key.txt', 'r') as file:
     key += file.read()
 
-client = OpenAI(api_key=key)
+# client = OpenAI(api_key=key)
+client = OpenAI(
+    api_key=os.environ['OPENAI_API_KEY']
+)
 
 device = 'mps' if torch.backends.mps.is_available() else 'cpu'
 

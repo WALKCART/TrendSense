@@ -49,3 +49,5 @@
   - has all the articles in the cluster
   - saved 5 clusters for sample (`rough.py`)
   - updated CLI (`main.py`) with access to clustering titles.
+
+rewrite main.py such that it uses existing csv files unless specified to retireve/cluster.

@@ -15,4 +15,4 @@ save_clusters(
     clusters=clusters
 )
 
-s = 0
+print('saved the clusters in clusters.csv')
