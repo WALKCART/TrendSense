@@ -5,6 +5,9 @@ import numpy as np
 from clustering.config import bestConfig
 import pandas as pd
 from tqdm import tqdm
+import umap
+import hdbscan
+
 
 config = bestConfig
 
@@ -46,3 +49,33 @@ def get_clustering_inds(sents: pd.Series, indices: pd.Series = None):
             indices[mask] = ind
             if mask.sum() > 0: ind += 1 #increment index only if similar articles found.
     return indices
+
+def get_clustering_inds_hdb(sents: pd.Series, min_cluster_size: int = 10):
+    # Experimenting with HDBSCAN
+    assert isinstance(sents, pd.Series), f'sents provided is {type(sents)} not pd.Series!'
+    embeddings = get_embedding(sents.to_list())
+    print('Reducing Dimensions with UMAP...')
+    reducer = umap.UMAP(
+        n_neighbors=10,      
+        n_components=5,      
+        min_dist=0.0,        
+        metric='cosine',     
+        random_state=42
+    )
+    reduced_embeddings = reducer.fit_transform(embeddings)
+
+    print('Clustering with HDBSCAN...')
+    clusterer = hdbscan.HDBSCAN(
+        min_cluster_size=config.minimum_articles,  
+        min_samples=3,
+        metric='euclidean',                 
+        cluster_selection_method='eom',    
+        cluster_selection_epsilon=0.35, 
+    )
+    
+    cluster_labels = clusterer.fit_predict(reduced_embeddings)
+
+    indices = pd.Series(cluster_labels, index=sents.index)
+    
+    return indices
+

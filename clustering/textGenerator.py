@@ -3,10 +3,12 @@ import pandas as pd
 from transformers import pipeline
 import torch
 import os
+from dotenv import load_dotenv
+load_dotenv()
 
 key = ''
-with open('api_key.txt', 'r') as file:
-    key += file.read()
+'''with open('api_key.txt', 'r') as file:
+    key += file.read()'''
 
 # client = OpenAI(api_key=key)
 client = OpenAI(

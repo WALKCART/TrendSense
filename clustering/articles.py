@@ -23,11 +23,14 @@ class ArticleCluster:
         return self.articles
     
     def get_cluster_title(self):
-        if self.cluster_title is None: 
-            summaries = self.articles.summary
-            cluster_info =  '\n\n'.join(summaries[~summaries.isna()].to_list())
-            title = get_title(cluster_info)
-            return title
+        if self.cluster_title is None:
+            # Using both the title and summary of the article and filling in the nan values
+            summaries = self.articles.summary.fillna("").astype(str)
+            art_title = self.articles.title.fillna("").astype(str)
+            combined = "TITLE: " + art_title + "\nSUMMARY: " + summaries
+            cluster_info = '\n' + '-'*30 + '\n'.join(combined.to_list())
+            clust_title = get_title(cluster_info)
+            return clust_title
         else: 
             return self.cluster_title
 
