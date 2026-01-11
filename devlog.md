@@ -51,3 +51,15 @@
   - updated CLI (`main.py`) with access to clustering titles.
 
 rewrite main.py such that it uses existing csv files unless specified to retireve/cluster.
+
+**11 Jan 2026:- Aditya**
+- Experimented with clustering minimum_articles and used titles + summary to cluster instead of just summary
+- Also experimented with using UMAP and HDBSCAN for the clustering (Created the function get_clustering_inds_hdb). 
+  - Currently using this function for clustering
+  - found to give better clusters
+- Created datamanager package to upload files to S3 and to Supabase and changed main.py accordingly
+- To-Do:- 
+  - content_fetcher.py
+  - clustersdb_upload.py
+  - article_clusters_upload.py
+  - clear_tables.py

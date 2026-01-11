@@ -3,6 +3,7 @@ from prettyPrint import centerPrint, divPrint
 from clustering.embedding import *
 from clustering.articles import *
 from clustering.textGenerator import warm_up
+from data_manager import s3_upload, articlesdb_upload, config
 import os
 import pandas as pd
 pd.set_option('display.max_rows', None)
@@ -19,9 +20,10 @@ menus = ''
 menus += '0: List Sources\n'
 menus += '1: Get Summary\n'
 menus += '2: Get New Articles\n'
-menus += '3: Get Clusters\n'
-menus += '4: View Cluster\n'
-menus += '5: Exit'
+menus += '3: Upload Articles to S3 and Supabase\n'
+menus += '4: Get Clusters\n'
+menus += '5: View Cluster\n'
+menus += '6: Exit'
 
 #printing the title 
 text = ''
@@ -59,8 +61,18 @@ while True:
                 p=p
             )
         case '3':
+            if not os.path.exists(config.ARTICLES_CSV) or os.stat(config.ARTICLES_CSV).st_size == 0:
+                print("Data Buffer is Empty.\n Run 'Get New Articles (Case 2) first.")
+            else:
+                print("Initialising Cloud Sync...")
+                s3_upload.s3_upload()
+                status = articlesdb_upload.articlesdb_upload()
+                print(status)
+        case '4':
             articles = pd.read_csv(p)
-            inds = get_clustering_inds(sents=articles.summary) 
+            # Using both the title and summary; Filling nan values with empty string
+            combined_text = articles['title'].fillna("").astype(str) + " - " + articles['summary'].fillna("").astype(str)
+            inds = get_clustering_inds_hdb(sents=combined_text) 
             articles['clustering_index'] = inds
             articles.to_csv(p, index=False)
             clusters = create_article_clusters(
@@ -71,7 +83,7 @@ while True:
                 print(f'{ind}: {clusters[ind]}')
             save_clusters('clusters.csv', clusters=clusters)
             clustered = True
-        case '4':
+        case '5':
             if not clustered:
                 print('Clusters not assigned!')
                 print('Run Menu Option 3')
@@ -80,7 +92,7 @@ while True:
                 cluster_ind = int(input('Clustering Ind: '))
                 print(clusters[cluster_ind])
                 print(clusters[cluster_ind].articles)
-        case '5':
+        case '6':
             centerPrint('Thank You for using TrendSense!')
             break
         case _:
