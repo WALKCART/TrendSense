@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "trendsense"
+version = "0.1.0"
+description = "A professional news scraping and clustering CLI tool."
+authors = [{ name = "WALKCART" }]
+readme = "README.md"
+requires-python = ">=3.9"
+
+dependencies = [
+    "click",
+    "pandas",
+    "numpy",
+    "feedparser",
+    "requests",
+    "beautifulsoup4",
+    "tqdm",
+    "scikit-learn",
+    "transformers",
+    "sentence-transformers",
+    "openai",
+    "umap-learn",
+    "hdbscan",
+    "boto3",
+    "supabase",
+    "python-dotenv"
+]
+
+[project.scripts]
+trend = "trendsense.trend:cli"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

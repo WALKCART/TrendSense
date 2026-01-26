@@ -5,6 +5,7 @@ from supabase import create_client
 from . import config
 from . import buffer_loader
 from . import buffer_cleaner
+import state_manager.state_manager as sm
 import pandas as pd
 from tqdm import tqdm
 load_dotenv()
@@ -15,8 +16,8 @@ def get_supabase_client():
     return create_client(url, key)
 
 def articlesdb_upload():
-    if not config.S3_UPLOAD_DONE:
-        return "Upload files to S3 before updating ArticlesDB"
+    if not sm.get("S3_UPLOAD_DONE"):
+        return ("Upload files to S3 before updating ArticlesDB", -1)
     supabase = get_supabase_client()
 
     try:
@@ -25,7 +26,7 @@ def articlesdb_upload():
         merged_df = pd.merge(articles_df, log_df, on='id')
 
     except FileNotFoundError as e:
-        return "Error: Could not find either aritcles.csv or temp_log.csv"
+        return ("Error: Could not find either aritcles.csv or temp_log.csv", -2)
 
     for index, row in tqdm(merged_df.iterrows(), total=merged_df.shape[0], desc="Syncing to Supabase"):
         data = {
@@ -43,7 +44,5 @@ def articlesdb_upload():
         except Exception as e:
             return f"\nError inserting ID {row['id']}: {e}"
     
-    buffer_cleaner.clear_articles_csv()
-    buffer_cleaner.clear_temp_log.csv()
-    return "Files Successfully Uploaded to ArticlesDB"
+    return ("Files Successfully Uploaded to ArticlesDB", 0)
 

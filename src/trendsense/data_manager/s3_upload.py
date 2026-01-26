@@ -3,6 +3,7 @@ import boto3
 import uuid
 import csv
 from dotenv import load_dotenv
+import state_manager.state_manager as sm
 from . import config
 from . import buffer_loader
 import pandas as pd
@@ -38,5 +39,5 @@ def s3_upload():
         with open(config.TEMP_LOG_CSV, 'a') as fh:
             fh.write(f"{row['id']},{s3_key}\n")
     
-    config.S3_UPLOAD_DONE = True
+    sm.set("S3_UPLOAD_DONE", "True")
     print("Files successfully uploaded to S3")

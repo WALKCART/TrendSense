@@ -6,7 +6,8 @@ from clustering.config import bestConfig
 import pandas as pd
 from tqdm import tqdm
 import umap
-import hdbscan
+from sklearn.cluster import HDBSCAN
+from clustering.config import bestConfig
 
 
 config = bestConfig
@@ -65,7 +66,7 @@ def get_clustering_inds_hdb(sents: pd.Series, min_cluster_size: int = 10):
     reduced_embeddings = reducer.fit_transform(embeddings)
 
     print('Clustering with HDBSCAN...')
-    clusterer = hdbscan.HDBSCAN(
+    clusterer = HDBSCAN(
         min_cluster_size=config.minimum_articles,  
         min_samples=3,
         metric='euclidean',                 

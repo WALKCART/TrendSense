@@ -63,3 +63,13 @@ rewrite main.py such that it uses existing csv files unless specified to retirev
   - clustersdb_upload.py
   - article_clusters_upload.py
   - clear_tables.py
+
+**26 Jan 2026:- Aditya**
+- Replaced HDBSCAN with the HDBSCAN implementation in sklearn
+- Updated sources.csv to utilise google news rss feed for sources like business standard and reuters
+- Perform Data Cleaning before saving to csv and changing published date to datetime(utils module??)
+- To-Do:- 
+  - Create a proper CLI using CLICK
+  - Create vector embeddings(create script in clustering)
+  - Upload Clusterings to S3 bucket and their references to supabase
+  - Instead of creating embeddings while clustering, make the clustering algo fetch the required vector embeddings from the S3 bucket

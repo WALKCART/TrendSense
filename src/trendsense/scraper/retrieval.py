@@ -1,6 +1,7 @@
 from scraper.RSS import RSSSource
 import pandas as pd
 import feedparser
+import state_manager.state_manager as sm
 import os
 import requests
 from bs4 import BeautifulSoup
@@ -59,7 +60,7 @@ def get_new(sources: list, p: str):
             body.append(get_text_from_html(get_html(entry['link'])))
             clustering_index.append(pd.NA)
 
-    pd.DataFrame({
+    df = pd.DataFrame({
         'site': site,
         'section': section,
         'title': title, 
@@ -74,7 +75,10 @@ def get_new(sources: list, p: str):
         'published_parsed': published_parsed,
         'body': body,
         'clustering_index': clustering_index
-    }).to_csv(p, index=False)
+    })
+    
+    sm.set("SCRAPPED", "True")
+    df.to_csv(p, index=False)
 
         
 def get_html(url: str):

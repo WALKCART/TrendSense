@@ -1,0 +1,2 @@
+[console_scripts]
+trend = trendsense.trend:cli
