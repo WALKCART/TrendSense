@@ -1,17 +1,20 @@
-from scraper.RSS import RSSSource
+from trendsense.scraper.RSS import RSSSource
 import pandas as pd
 import feedparser
-import state_manager.state_manager as sm
 import os
 import requests
 from bs4 import BeautifulSoup
 from tqdm import tqdm
+from pathlib import Path
 
 def load_sources():
-    db = pd.read_csv(os.path.join('scraper', 'sources.csv'))
-    sources = []
+    base_dir = Path(__file__).resolve().parent
+    sources_path = base_dir / "sources.csv"
 
-    for rowInd, ser in db.iterrows():
+    db = pd.read_csv(sources_path)
+
+    sources = []
+    for _, ser in db.iterrows():
         sources.append(RSSSource(ser.site, ser.section, ser.link))
 
     return sources
@@ -77,7 +80,6 @@ def get_new(sources: list, p: str):
         'clustering_index': clustering_index
     })
     
-    sm.set("SCRAPPED", "True")
     df.to_csv(p, index=False)
 
         

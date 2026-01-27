@@ -30,7 +30,7 @@ dependencies = [
 ]
 
 [project.scripts]
-trend = "trendsense.trend:cli"
+trense = "trendsense.cli.trense:cli"
 
 [tool.setuptools]
 package-dir = {"" = "src"}

@@ -2,12 +2,12 @@ from sentence_transformers import SentenceTransformer
 import torch
 from itertools import combinations
 import numpy as np
-from clustering.config import bestConfig
+from trendsense.clustering.config import bestConfig
 import pandas as pd
 from tqdm import tqdm
 import umap
 from sklearn.cluster import HDBSCAN
-from clustering.config import bestConfig
+from trendsense.clustering.config import bestConfig
 
 
 config = bestConfig

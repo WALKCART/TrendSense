@@ -1,7 +1,7 @@
 import pandas as pd
-from clustering.textGenerator import *
+from trendsense.clustering.textGenerator import *
 from tqdm import tqdm
-from clustering.config import bestConfig
+from trendsense.clustering.config import bestConfig
 
 class ArticleCluster:
     '''

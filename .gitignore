@@ -6,3 +6,5 @@ scraper/__pycache__/
 clustering/__pycache__/
 api_key.txt
 .vscode
+src/trendsense.egg-info/
+test.ipynb
