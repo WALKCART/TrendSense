@@ -2,6 +2,9 @@ from trendsense.scraper.RSS import RSSSource
 import pandas as pd
 import feedparser
 import os
+from datetime import date, timedelta, datetime
+from time import mktime
+from typing import Optional
 import requests
 from bs4 import BeautifulSoup
 from tqdm import tqdm
@@ -25,61 +28,30 @@ def get_summary(source: RSSSource,
     feed = feedparser.parse(source.url)
     return feed.entries[entry].summary
 
-def get_new(sources: list, p: str):
-    site = []
-    section = []
-    title = []
-    title_detail = []
-    summary = []
-    summary_detail = []
-    links = []
-    link = []
-    ids = []
-    guidislink = []
-    published = []
-    published_parsed = []
-    body = []
-    clustering_index = []
-
+def get_new(sources: list, p: str, end_dt: date, start_dt: Optional[date] = None):
+    data = []
 
     for source in tqdm(sources):
         feed = feedparser.parse(source.url)
-        n = len(feed.entries)
-
-        site.extend([source.site]*n)
-        section.extend([source.section]*n)
 
         for entry in feed.entries:
-            title.append(entry.title)
-            title_detail.append(entry.title_detail)
-            summary.append(entry.summary)
-            summary_detail.append(entry.summary_detail)
-            links.append(entry.links)
-            link.append(entry.link)
-            ids.append(entry.id)
-            guidislink.append(entry.guidislink)
-            published.append(entry.published)
-            published_parsed.append(entry.published_parsed)
-            body.append(get_text_from_html(get_html(entry['link'])))
-            clustering_index.append(pd.NA)
-
-    df = pd.DataFrame({
-        'site': site,
-        'section': section,
-        'title': title, 
-        'title_detail': title_detail,
-        'summary': summary,
-        'summary_detail': summary_detail, 
-        'links': links,
-        'link': link,
-        'id': ids, 
-        'guidislink': guidislink,
-        'published': published,
-        'published_parsed': published_parsed,
-        'body': body,
-        'clustering_index': clustering_index
-    })
-    
+            entry_date = datetime.fromtimestamp(mktime(entry.published_parsed))
+            is_after_start = (start_dt is None) or (entry_date >= start_dt)
+            is_before_end = (entry_date <= end_dt)
+            if is_after_start and is_before_end:
+                body_text = get_text_from_html(get_html(entry.link))
+                data.append({
+                    'site': source.site,
+                    'section': source.section,
+                    'title': entry.title,
+                    'summary': entry.get('summary', ''),
+                    'link': entry.link,
+                    'published': entry_date,
+                    'body': body_text,
+                    'clustering_index': pd.NA
+                })
+        
+    df = pd.DataFrame(data)
     df.to_csv(p, index=False)
 
         

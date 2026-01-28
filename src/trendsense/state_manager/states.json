@@ -1,6 +1,6 @@
 {
-  "clustered": true,
   "scrapped": true,
-  "s3_upload_done": false,
-  "articlesdb_upload_done": false
+  "s3_upload_done": true,
+  "articlesdb_upload_done": true,
+  "clustered": false
 }
