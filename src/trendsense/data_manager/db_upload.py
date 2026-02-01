@@ -13,10 +13,13 @@ def get_supabase_client():
     return create_client(url, key)
 
 
-def articles_db_upload():
+def articles_db_upload(input_path):
     supabase = get_supabase_client()
 
-    articles_df = buffer_loader.load_articles()
+    if input_path:
+        articles_df = pd.read_csv(input_path)
+    else:
+        articles_df = buffer_loader.load_articles()
     log_df = buffer_loader.load_temp_log()
     if articles_df.empty or log_df.empty:
         print("Nothing to upload to ArticlesDB.")

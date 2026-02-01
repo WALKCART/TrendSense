@@ -10,6 +10,15 @@ from tqdm import tqdm
 load_dotenv()
 
 
+def _clean_str(s):
+    return (
+        str(s)
+        .lower()
+        .strip()
+        .replace(" ", "_")
+        .replace("/", "_")
+    )
+
 def initialise_temp_log():
     with open(config.TEMP_LOG_CSV, 'w') as fh:
         fh.write("row_idx,serial_no,article_id,s3_key\n")
@@ -38,33 +47,41 @@ def get_next_serial_no(supabase) -> int:
 
     return res.data[0]["serial_no"] + 1
 
-def articles_s3_upload():
+
+def articles_s3_upload(input_path):
     s3_client = boto3.client('s3')
     supabase = get_supabase_client()
 
     initialise_temp_log()
-
-    df = buffer_loader.load_articles()
+    if input_path:
+        df = pd.read_csv(input_path)
+    else:
+        df = buffer_loader.load_articles()
 
     next_serial = get_next_serial_no(supabase)
 
     for idx, row in tqdm(df.iterrows(), total=df.shape[0], desc="Uploading to S3"):
         serial_no = next_serial
         next_serial += 1
-        unique_id = str(uuid.uuid4())
-        site = row['site']
-        section = row['section']
+        unique_id = str(uuid.uuid4().hex)
+        site = _clean_str(row['site'])
+        section = _clean_str(row['section'])
         article_id = f"art-{serial_no}-{site}-{section}-{unique_id}"
         s3_key = f"{config.S3_PREFIX}/{article_id}.json"
         json_payload = row[['title', 'summary', 'body']].to_json()
 
-        s3_client.put_object(
-            Bucket = config.S3_BUCKET,
-            Key = s3_key,
-            Body = json_payload
-        )
+        try:
+            s3_client.put_object(
+                Bucket = config.S3_BUCKET,
+                Key = s3_key,
+                Body = json_payload,
+                ContentType="application/json"
+            )
 
-        with open(config.TEMP_LOG_CSV, 'a') as fh:
-            fh.write(f"{idx},{serial_no},{article_id},{s3_key}\n")
-    
+            with open(config.TEMP_LOG_CSV, 'a') as fh:
+                fh.write(f"{idx},{serial_no},{article_id},{s3_key}\n")
+        except Exception as e:
+            print(f"Failed to upload article {article_id}: {e}")
+            continue
+        
     print("Articles successfully uploaded to S3")

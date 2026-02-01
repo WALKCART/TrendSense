@@ -12,14 +12,15 @@ def upload():
 
 
 @upload.command("s3-articles")
-def upload_articles_s3():
+@click.option("--input-path", "-i", type = str, help = "Location of the source file")
+def upload_articles_s3(input_path):
     """
     Upload scraped articles to S3 and generate canonical article IDs.
     """
     click.echo("Starting S3 upload for articles...")
 
     try:
-        articles_s3_upload()
+        articles_s3_upload(input_path=input_path)
     except Exception as e:
         click.echo(f"Upload failed: {e}", err=True)
         raise SystemExit(1)
@@ -28,14 +29,15 @@ def upload_articles_s3():
 
 
 @upload.command("db-articles")
-def upload_articles_db():
+@click.option("--input-path", "-i", type = str, help = "Location of the source file")
+def upload_articles_db(input_path):
     """
     Upload scraped articles to ArticlesDB
     """
     click.echo("Starting ArticlesDB upload...")
 
     try:
-        articles_db_upload()
+        articles_db_upload(input_path=input_path)
     except Exception as e:
         click.echo(f"Upload failed: {e}", err=True)
         raise SystemExit(1)
