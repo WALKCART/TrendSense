@@ -59,7 +59,7 @@ def upload_title_embs_s3(input_path, ingested_date):
     if ingested_date:
         ingested_date = datetime.strptime(ingested_date, "%Y-%m-%d").date()
     else:
-        ingested_date = datetime.now(timezone.utc).date()
+        ingested_date = datetime.now().date()
 
     title_embs_s3_upload(
         input_path=input_path,
@@ -77,7 +77,7 @@ def upload_summary_embs_s3(input_path, ingested_date):
     if ingested_date:
         ingested_date = datetime.strptime(ingested_date, "%Y-%m-%d").date()
     else:
-        ingested_date = datetime.now(timezone.utc).date()
+        ingested_date = datetime.now().date()
 
     summary_embs_s3_upload(
         input_path=input_path,

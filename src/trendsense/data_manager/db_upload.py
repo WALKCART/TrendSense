@@ -36,7 +36,7 @@ def articles_db_upload(input_path):
         right_on="row_idx",
         how="inner",
     )
-    ingested_date = datetime.now(timezone.utc).date()
+    ingested_date = datetime.now().date()
     for _, row in tqdm(merged_df.iterrows(), total=merged_df.shape[0], desc="Syncing to Supabase"):
         data = {
             "art_id":row['article_id'],
@@ -45,11 +45,11 @@ def articles_db_upload(input_path):
             "section": row['section'],
             "title": row['title'],
             "link": row['link'],
-            "published": (pd.to_datetime(row["published"]).date().isoformat() if not pd.isna(row["published"]) else None),
+            "published": row['published'],
             "s3_key": row['s3_key'],
             "embedded": False,
             "clustered": False,
-            "ingested_date": ingested_date
+            "ingested_date": ingested_date.isoformat()
         }
 
         supabase.table(config.ARTICLES_DB).upsert(data).execute()
