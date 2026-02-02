@@ -19,4 +19,4 @@ def load_temp_log():
     '''
         Load temp_log.csv
     '''
-    return pd.read_csv(config.TEMP_LOG_CSV)
+    return pd.read_csv(config.TEMP_ART_LOG_CSV)

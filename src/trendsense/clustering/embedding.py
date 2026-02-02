@@ -63,7 +63,7 @@ def _embed_and_write(df, column: str, output_file: Path):
         supabase
         .table(trendsense.data_manager.config.ARTICLES_DB)
         .select("art_id, title, link, site, section, published")
-        .eq("clustered", False)
+        .eq("embedded", False)
         .execute()
     )
     

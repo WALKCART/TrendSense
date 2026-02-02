@@ -1,5 +1,5 @@
 import click
-from trendsense.data_manager.clear_db import clear_supabase_table
+from trendsense.data_manager.clear import clear_supabase_table
 
 @click.group()
 def clear():

@@ -1,6 +1,7 @@
 import os
 from dotenv import load_dotenv
 from supabase import create_client
+from typing import Optional
 load_dotenv()
 
 
@@ -18,3 +19,6 @@ def clear_supabase_table(table_name):
     except Exception as e:
         print(f"Debug Error: {e}")
         return -1
+    
+def clear_s3(bucket_name: str, prefix: Optional[str]):
+    """Implement this"""

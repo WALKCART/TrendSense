@@ -1,0 +1,2 @@
+batch_date,summary_s3_key
+2026-02-02,vectors/2026-02-02/summary_embs.parquet
