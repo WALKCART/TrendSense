@@ -36,7 +36,7 @@ def articles_db_upload(input_path):
         right_on="row_idx",
         how="inner",
     )
-    ingested_date = datetime.now().date()
+    ingested_date = datetime.now(timezone.utc).date()
     for _, row in tqdm(merged_df.iterrows(), total=merged_df.shape[0], desc="Syncing to Supabase"):
         data = {
             "art_id":row['article_id'],
