@@ -19,7 +19,7 @@ def get_supabase_client():
     return create_client(url, key)
 
 
-def articles_db_upload(input_path):
+def articles_db_upload(input_path, ingested_date):
     supabase = get_supabase_client()
 
     if input_path:
@@ -36,7 +36,7 @@ def articles_db_upload(input_path):
         right_on="row_idx",
         how="inner",
     )
-    ingested_date = datetime.now(timezone.utc).date()
+    
     for _, row in tqdm(merged_df.iterrows(), total=merged_df.shape[0], desc="Syncing to Supabase"):
         data = {
             "art_id":row['article_id'],
@@ -79,7 +79,7 @@ def vec_db_upload(created_date):
         batch_date_ts = datetime.fromisoformat(row["batch_date"]).replace(tzinfo=timezone.utc).isoformat()
         created_at_ts = datetime.combine(created_date, datetime.min.time(), tzinfo=timezone.utc).isoformat()
         rows.append({
-            "id": f"{row['batch_date']}-{bestConfig.model}",  
+            "batch_id": f"{row['batch_date']}-{bestConfig.model}",  
             "batch_date": batch_date_ts,
             "title_s3_key": row["title_s3_key"],
             "summary_s3_key": row["summary_s3_key"],

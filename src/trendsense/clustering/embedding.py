@@ -29,101 +29,86 @@ def get_model():
         )
     return _model
 
-def get_embedding(input_path: Path, output_path: Path, title_emb: bool = False, summary_emb: bool = False):
+def get_embedding(output_path: Path, title_emb: bool = False, summary_emb: bool = False):
     """Creates embeddings for selected fields and stores them in parquet file """
 
     if not title_emb and not summary_emb:
         raise ValueError("At least one of title or summary must be True")
     
     print('Creating Embeddings:')
-    articles_df = pd.read_csv(input_path)
     output_path.mkdir(parents=True, exist_ok=True)
 
     if title_emb:
         _embed_and_write(
-            df=articles_df,
             column="title",
             output_file=output_path / "title_emb.parquet",
         )
     if summary_emb:
         _embed_and_write(
-            df=articles_df,
             column="summary",
             output_file=output_path / "summary_emb.parquet",
         )
     
 
-def _embed_and_write(df, column: str, output_file: Path):
+def _embed_and_write(column: str, output_file: Path):
     """
     Embed a given text column for selected article IDs
     and write embeddings to a Parquet file.
     """
-    supabase = get_supabase_client()
-    response = (
-        supabase
-        .table(trendsense.data_manager.config.ARTICLES_DB)
-        .select("art_id, title, link, site, section, published")
-        .eq("embedded", False)
-        .execute()
-    )
-    
-    if not response.data:
-        print("No eligible articles found in Supabase. Skipping.")
+
+    # fetch unembedded article ids
+    articles = trendsense.data_manager.fetch.fetch_unembedded_articles()
+    if articles.empty:
+        print("No unembedded articles found. Skipping.")
         return
 
-    db_df = pd.DataFrame(response.data)
-    def norm_str(s):
-        return s.astype(str).str.strip().str.lower()
-    def norm_date(s):
-        return pd.to_datetime(s, errors="coerce").dt.date
+    if column == "title":
+        valid = articles[
+            articles["title"].notna()
+            & articles["title"].astype(str).str.strip().ne("")
+        ][["art_id", "title"]]
 
-    join_cols = ["link", "site", "section", "title", "published"]
-    for col in join_cols:
-        df[col] = norm_str(df[col])
-        db_df[col] = norm_str(db_df[col])
-    df["published"] = norm_date(df["published"])
-    db_df["published"] = norm_date(db_df["published"])
-    merged = df.merge(
-        db_df,
-        on=join_cols,
-        how="inner",
-        validate="one_to_one"
-    )
+        texts = valid["title"].astype(str).tolist()
+        art_ids = valid["art_id"].tolist()
 
-    if len(merged) != len(df):
-        raise RuntimeError(
-            f"CSV-Supabase mismatch: CSV={len(df)}, merged={len(merged)}"
+    elif column == "summary":
+        summaries = trendsense.data_manager.fetch.fetch_summaries(
+            articles[["art_id", "s3_key"]].itertuples(index=False)
         )
-    
-    valid = merged[
-        merged[column].notna()
-        & merged[column].astype(str).str.strip().ne("")
-    ]
 
-    if valid.empty:
+        if summaries.empty:
+            print("No valid summaries found. Skipping.")
+            return
+
+        texts = summaries["summary"].astype(str).tolist()
+        art_ids = summaries["art_id"].tolist()
+
+    else:
+        raise ValueError(f"Unsupported column: {column}")
+
+    if not texts:
         print(f"No valid {column} texts found. Skipping.")
         return
 
-    texts = valid[column].astype(str).tolist()
-    art_ids = valid["art_id"].tolist()
-
+    # embed
     print(f"Embedding {len(texts)} {column} texts...")
 
     model = get_model()
-
     embeddings = model.encode(texts, show_progress_bar=True)
     embeddings = np.asarray(embeddings, dtype="float32")
 
-    table = pa.table({
-        "art_id": art_ids,
-        "embedding": list(embeddings)
-    })
-
+    # writing to parquet
+    table = pa.table(
+        {
+            "art_id": art_ids,
+            "embedding": list(embeddings),
+        }
+    )
     pq.write_table(table, output_file, compression="snappy")
+    print(f"Wrote {len(art_ids)} {column} embeddings → {output_file}")
 
 
-def get_cosine_similarity(v1: np.ndarray, 
-                          v2: np.ndarray):
+def get_cosine_similarity(v1: np.ndarray, v2: np.ndarray):
     v1 = torch.from_numpy(v1).to(config.device).float()
     v2 = torch.from_numpy(v2).to(config.device).float()
     num = torch.sum(v1 * v2, dim=1)

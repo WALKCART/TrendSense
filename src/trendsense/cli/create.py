@@ -15,9 +15,8 @@ def create():
 @create.command("embeddings")
 @click.option("--title-emb", "-t", is_flag = True, help = "Create Title embeddings")
 @click.option("--summary-emb", "-s", is_flag = True, help = "Create Sumary embeddings")
-@click.option("--input-path", "-i", type=click.Path(exists=True, path_type=Path), help = "Location of source FILE",)
 @click.option("--output-path", "-o", type=click.Path(exists=True, path_type=Path), help = "Location of the output DIRECTORY")
-def create_embeddings(title_emb, summary_emb, input_path, output_path):
+def create_embeddings(title_emb, summary_emb, output_path):
     """
     Creates vector embeddings for title and susmmaries and stores them as parquet files
     """
@@ -25,4 +24,5 @@ def create_embeddings(title_emb, summary_emb, input_path, output_path):
         raise click.UsageError(
             "Specify at least one embedding type: --title and/or --summary"
         )
-    get_embedding(input_path=input_path, output_path=output_path, title_emb=title_emb, summary_emb=summary_emb)
+    
+    get_embedding(output_path=output_path, title_emb=title_emb, summary_emb=summary_emb)

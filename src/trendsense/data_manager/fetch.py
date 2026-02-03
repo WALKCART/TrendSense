@@ -9,6 +9,7 @@ from . import config
 import pyarrow as pa
 import pyarrow.parquet as pq
 from pathlib import Path
+from typing import Iterable
 load_dotenv()
 
 
@@ -16,6 +17,95 @@ def get_supabase_client():
     url = os.environ.get("SUPABASE_URL")
     key = os.environ.get("SUPABASE_KEY")
     return create_client(url, key)
+
+
+def fetch_unembedded_articles(page_size: int = 1000) -> pd.DataFrame:
+    """
+    Fetch articles that have not yet been embedded.
+
+    Returns a DataFrame with columns:
+    - art_id
+    - title
+    - s3_key
+    """
+
+    supabase = get_supabase_client()
+    rows = []
+    offset = 0
+
+    while True:
+        response = (
+            supabase
+            .table(config.ARTICLES_DB)
+            .select("art_id, title, s3_key")
+            .eq("embedded", False)
+            .range(offset, offset + page_size - 1)
+            .execute()
+        )
+
+        data = response.data or []
+        if not data:
+            break
+
+        rows.extend(data)
+        offset += page_size
+
+    if not rows:
+        return pd.DataFrame(columns=["art_id", "title", "s3_key"])
+
+    df = pd.DataFrame(rows)
+
+    df["title"] = df["title"].astype(str).str.strip()
+    df["s3_key"] = df["s3_key"].astype(str).str.strip()
+
+    return df
+
+
+
+def fetch_summaries(records: Iterable[tuple[str, str]]) -> pd.DataFrame:
+    """
+    Fetch summaries from S3.
+
+    Parameters
+    ----------
+    records : iterable of (art_id, s3_key)
+
+    Returns
+    -------
+    DataFrame with columns:
+    - art_id
+    - s3_key
+    - summary (None if missing)
+    """
+
+    s3 = boto3.client("s3")
+    BUCKET_NAME = config.S3_BUCKET
+
+    rows = []
+
+    for art_id, s3_key in records:
+        summary = None
+
+        if s3_key:
+            try:
+                obj = s3.get_object(Bucket=BUCKET_NAME, Key=s3_key)
+                body = obj["Body"].read()
+                payload = json.loads(body)
+                summary = payload.get("summary")
+
+                if not summary or not summary.strip():
+                    continue
+
+                rows.append({
+                    "art_id": art_id,
+                    "s3_key": s3_key,
+                    "summary": summary.strip()
+                })
+
+
+            except Exception:
+                continue
+    return pd.DataFrame(rows)
 
 
 def fetch_title_embs():

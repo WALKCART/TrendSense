@@ -33,14 +33,20 @@ def upload_articles_s3(input_path):
 
 @upload.command("db-articles")
 @click.option("--input-path", "-i", type = str, help = "Location of the source file")
-def upload_articles_db(input_path):
+@click.option("--ingested-date", "-d", type=str, default=None, help="Ingested date in YYYY-MM-DD format (defaults to today UTC)")
+def upload_articles_db(input_path, ingested_date):
     """
     Upload scraped articles to ArticlesDB
     """
     click.echo("Starting ArticlesDB upload...")
 
+    if ingested_date:
+        ingested_date = datetime.strptime(ingested_date, "%Y-%m-%d").date()
+    else:
+        ingested_date = datetime.now(timezone.utc).date()
+
     try:
-        articles_db_upload(input_path=input_path)
+        articles_db_upload(input_path=input_path, ingested_date=ingested_date)
     except Exception as e:
         click.echo(f"Upload failed: {e}", err=True)
         raise SystemExit(1)
@@ -50,38 +56,38 @@ def upload_articles_db(input_path):
 
 @upload.command("s3-title-embs")
 @click.option("--input-path", "-i", type=click.Path(exists=True, path_type=Path), default=None, help="Path to title embeddings parquet file (defaults to DataBuffer path)",)
-@click.option("--ingested-date", "-d", type=str, default=None, help="Ingested date in YYYY-MM-DD format (defaults to today UTC)",)
-def upload_title_embs_s3(input_path, ingested_date):
+@click.option("--created-date", "-d", type=str, default=None, help="Created date in YYYY-MM-DD format (defaults to today UTC)",)
+def upload_title_embs_s3(input_path, created_date):
     """
     Upload title embeddings parquet file to S3.
     """
     # Resolve ingested_date
-    if ingested_date:
-        ingested_date = datetime.strptime(ingested_date, "%Y-%m-%d").date()
+    if created_date:
+        created_date = datetime.strptime(created_date, "%Y-%m-%d").date()
     else:
-        ingested_date = datetime.now(timezone.utc).date()
+        created_date = datetime.now(timezone.utc).date()
 
     title_embs_s3_upload(
         input_path=input_path,
-        ingested_date=ingested_date,
+        ingested_date=created_date,
     )
 
 @upload.command("s3-summary-embs")
 @click.option("--input-path", "-i", type=click.Path(exists=True, path_type=Path), default=None, help="Path to summary embeddings parquet file (defaults to DataBuffer path)")
-@click.option("--ingested-date", "-d", type=str, default=None, help="Ingested date in YYYY-MM-DD format (defaults to today UTC)")
-def upload_summary_embs_s3(input_path, ingested_date):
+@click.option("--created-date", "-d", type=str, default=None, help="Created date in YYYY-MM-DD format (defaults to today UTC)")
+def upload_summary_embs_s3(input_path, created_date):
     """
     Upload summary embeddings parquet file to S3.
     """
     # Resolve ingested_date
-    if ingested_date:
-        ingested_date = datetime.strptime(ingested_date, "%Y-%m-%d").date()
+    if created_date:
+        created_date = datetime.strptime(created_date, "%Y-%m-%d").date()
     else:
-        ingested_date = datetime.now(timezone.utc).date()
+        created_date = datetime.now(timezone.utc).date()
 
     summary_embs_s3_upload(
         input_path=input_path,
-        ingested_date=ingested_date,
+        ingested_date=created_date,
     )
 
 @upload.command("db-vectors")
