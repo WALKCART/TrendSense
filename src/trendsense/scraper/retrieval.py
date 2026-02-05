@@ -50,11 +50,20 @@ def get_new(sources: list, p: str, end_dt: date, start_dt: Optional[date] = None
                     'body': body_text,
                     'clustering_index': pd.NA
                 })
-        
+
     df = pd.DataFrame(data)
+    # cleaning the data before saving to csv
+    df['published'] = pd.to_datetime(df['published'], format='mixed', utc=True)
+    df = df.dropna(subset=["link"])
+    df = df.drop_duplicates(subset=["link"])
+    df = df.dropna(subset=["title"])
+    df = df.drop_duplicates(subset=["title"])
+    df = df.dropna(subset=["published"])
+    # sorting in ascending order based on published date
+    df = df.sort_values(by="published", ascending=True)
     df.to_csv(p, index=False)
 
-        
+
 def get_html(url: str):
     r = requests.get(url)
     return r.text
