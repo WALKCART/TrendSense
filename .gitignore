@@ -8,3 +8,4 @@ api_key.txt
 .vscode
 src/trendsense.egg-info/
 test.ipynb
+*.DS_Store
