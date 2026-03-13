@@ -2,7 +2,7 @@ import os
 from . import config
 
 def clear_articles_csv():   
-    print("\Deleting articles.csv...")
+    print("Deleting articles.csv...")
     if os.path.exists(config.ARTICLES_CSV):
         try:
             os.remove(config.ARTICLES_CSV)
@@ -15,21 +15,21 @@ def clear_articles_csv():
     print("articles.csv deleted successfully.")
 
 def clear_temp_log_csv():
-    print("\Deleting temp_log.csv...")
-    if os.path.exists(config.TEMP_LOG_CSV):
+    print("Deleting temp_log.csv...")
+    if os.path.exists(config.TEMP_ART_LOG_CSV):
         try:
-            os.remove(config.TEMP_LOG_CSV)
-            print(f"Removed: {os.path.basename(config.TEMP_LOG_CSV)}")
+            os.remove(config.TEMP_ART_LOG_CSV)
+            print(f"Removed: {os.path.basename(config.TEMP_ART_LOG_CSV)}")
         except Exception as e:
-            print(f"Error deleting {config.TEMP_LOG_CSV}: {e}")
+            print(f"Error deleting {config.TEMP_ART_LOG_CSV}: {e}")
     else:
-        print(f"{os.path.basename(config.TEMP_LOG_CSV)} was already empty/not found.")
+        print(f"{os.path.basename(config.TEMP_ART_LOG_CSV)} was already empty/not found.")
             
     print("temp_log.csv deleted successfully.")
 
 
 def clear_clusters_csv():
-    print("\Deleting clusters.csv...")
+    print("Deleting clusters.csv...")
     if os.path.exists(config.CLUSTERS_CSV):
         try:
             os.remove(config.CLUSTERS_CSV)

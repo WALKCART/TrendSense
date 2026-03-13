@@ -1,5 +1,5 @@
 from sentence_transformers import SentenceTransformer
-from clustering import *
+from trendsense.clustering.create_clusters import *
 model = SentenceTransformer("all-mpnet-base-v2")
 import os
 import pandas as pd

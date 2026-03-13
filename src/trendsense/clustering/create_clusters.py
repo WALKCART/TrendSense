@@ -5,12 +5,13 @@ import hdbscan
 import os
 import numpy as np
 
-# config
+# config:- Add them in the config file and make changes accordingly
 UMAP_N_NEIGHBORS = 15
 UMAP_N_COMPONENTS = 50
 HDBSCAN_MIN_CLUSTER_SIZE = 3
 HDBSCAN_MIN_SAMPLES = 10
 RANDOM_STATE = 42
+
 
 def run_clustering(embeddings):
     n_samples = embeddings.shape[0]
@@ -202,13 +203,3 @@ def get_l4_clusters(centroids_l3, valid_l3_ids, articles):
         valid_l4_ids = None
 
     return centroids_l4, valid_l4_ids
-
-
-    
-        
-    
-
-
-
-
-

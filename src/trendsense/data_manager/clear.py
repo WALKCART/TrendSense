@@ -7,8 +7,10 @@ load_dotenv()
 
 
 def get_supabase_client():
-    url = os.environ.get("SUPABASE_URL")
-    key = os.environ.get("SUPABASE_KEY")
+    url = os.environ["SUPABASE_URL"]
+    key = os.environ["SUPABASE_KEY"]
+    if not url or not key:
+        raise ValueError("SUPABASE_URL and SUPABASE_KEY must be set")
     return create_client(url, key)
 
 def clear_supabase_table(table_name):

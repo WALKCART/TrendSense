@@ -14,10 +14,11 @@ from trendsense.clustering.config import bestConfig
 load_dotenv()
 
 def get_supabase_client():
-    url = os.environ.get("SUPABASE_URL")
-    key = os.environ.get("SUPABASE_KEY")
+    url = os.environ["SUPABASE_URL"]
+    key = os.environ["SUPABASE_KEY"]
+    if not url or not key:
+        raise ValueError("SUPABASE_URL and SUPABASE_KEY must be set")
     return create_client(url, key)
-
 
 def articles_db_upload(input_path, ingested_date):
     supabase = get_supabase_client()
@@ -49,7 +50,7 @@ def articles_db_upload(input_path, ingested_date):
             "s3_key": row['s3_key'],
             "embedded": False,
             "clustered": False,
-            "ingested_date": ingested_date.isoformat()
+            "ingested_date": ingested_date.date().isoformat()
         }
 
         supabase.table(config.ARTICLES_DB).upsert(data).execute()
@@ -76,8 +77,8 @@ def vec_db_upload(created_date):
     
     rows = []
     for _, row in merged_log.iterrows():
-        batch_date_ts = datetime.fromisoformat(row["batch_date"]).replace(tzinfo=timezone.utc).isoformat()
-        created_at_ts = datetime.combine(created_date, datetime.min.time(), tzinfo=timezone.utc).isoformat()
+        batch_date_ts = datetime.fromisoformat(row["batch_date"]).date().isoformat()
+        created_at_ts = created_date.strftime("%Y-%m-%d")
         rows.append({
             "batch_id": f"{row['batch_date']}-{bestConfig.model}",  
             "batch_date": batch_date_ts,
