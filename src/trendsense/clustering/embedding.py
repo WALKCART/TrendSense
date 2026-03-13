@@ -4,16 +4,16 @@ from sentence_transformers import SentenceTransformer
 import torch
 from itertools import combinations
 import numpy as np
-from trendsense.clustering.config import bestConfig
+from trendsense.clustering.config import bestConfig, VECTORS_OUTPUT_PATH
 import pandas as pd
 from tqdm import tqdm
 import umap
-from sklearn.cluster import HDBSCAN
+# from sklearn.cluster import HDBSCAN
 from trendsense.clustering.config import bestConfig
 import pyarrow as pa
 import pyarrow.parquet as pq
-from trendsense.data_manager.fetch import get_supabase_client
-import trendsense.data_manager
+# from trendsense.data_manager.fetch import get_supabase_client
+from trendsense.data_manager import fetch
 
 
 config = bestConfig
@@ -36,6 +36,8 @@ def get_embedding(output_path: Path, title_emb: bool = False, summary_emb: bool 
         raise ValueError("At least one of title or summary must be True")
     
     print('Creating Embeddings:')
+    if output_path is None:
+        output_path = VECTORS_OUTPUT_PATH
     output_path.mkdir(parents=True, exist_ok=True)
 
     if title_emb:
@@ -57,7 +59,7 @@ def _embed_and_write(column: str, output_file: Path):
     """
 
     # fetch unembedded article ids
-    articles = trendsense.data_manager.fetch.fetch_unembedded_articles()
+    articles = fetch.fetch_unembedded_articles()
     if articles.empty:
         print("No unembedded articles found. Skipping.")
         return
@@ -72,7 +74,7 @@ def _embed_and_write(column: str, output_file: Path):
         art_ids = valid["art_id"].tolist()
 
     elif column == "summary":
-        summaries = trendsense.data_manager.fetch.fetch_summaries(
+        summaries = fetch.fetch_summaries(
             articles[["art_id", "s3_key"]].itertuples(index=False)
         )
 
@@ -94,7 +96,7 @@ def _embed_and_write(column: str, output_file: Path):
     print(f"Embedding {len(texts)} {column} texts...")
 
     model = get_model()
-    embeddings = model.encode(texts, show_progress_bar=True)
+    embeddings = model.encode(texts, show_progress_bar=True, normalize_embeddings=True)
     embeddings = np.asarray(embeddings, dtype="float32")
 
     # writing to parquet
@@ -108,7 +110,7 @@ def _embed_and_write(column: str, output_file: Path):
     print(f"Wrote {len(art_ids)} {column} embeddings → {output_file}")
 
 
-def get_cosine_similarity(v1: np.ndarray, v2: np.ndarray):
+"""def get_cosine_similarity(v1: np.ndarray, v2: np.ndarray):
     v1 = torch.from_numpy(v1).to(config.device).float()
     v2 = torch.from_numpy(v2).to(config.device).float()
     num = torch.sum(v1 * v2, dim=1)
@@ -164,4 +166,4 @@ def get_clustering_inds_hdb(sents: pd.Series, min_cluster_size: int = 10):
     indices = pd.Series(cluster_labels, index=sents.index)
     
     return indices
-
+"""

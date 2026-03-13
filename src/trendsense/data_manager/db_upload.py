@@ -1,7 +1,6 @@
 import os
 from dotenv import load_dotenv
 from supabase import create_client
-
 import trendsense.clustering.config
 from . import config
 from . import buffer_loader
@@ -50,7 +49,7 @@ def articles_db_upload(input_path, ingested_date):
             "s3_key": row['s3_key'],
             "embedded": False,
             "clustered": False,
-            "ingested_date": ingested_date.date().isoformat()
+            "ingested_date": ingested_date.isoformat()
         }
 
         supabase.table(config.ARTICLES_DB).upsert(data).execute()
@@ -78,7 +77,7 @@ def vec_db_upload(created_date):
     rows = []
     for _, row in merged_log.iterrows():
         batch_date_ts = datetime.fromisoformat(row["batch_date"]).date().isoformat()
-        created_at_ts = created_date.strftime("%Y-%m-%d")
+        created_at_ts = created_date.isoformat()
         rows.append({
             "batch_id": f"{row['batch_date']}-{bestConfig.model}",  
             "batch_date": batch_date_ts,
