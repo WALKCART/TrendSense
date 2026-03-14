@@ -52,7 +52,7 @@ def get_half_life(clusters, cluster_id, get_visualization=False):
     
     if get_visualization: 
         # smooth curve
-        t_fit = np.linspace(0, t.max(), 200)
+        t_fit = np.linspace(0, t.max()*5, 200)
         y_fit = exp_cdf(t_fit, lam)
 
         # convert back to dates
