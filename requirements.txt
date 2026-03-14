@@ -14,3 +14,6 @@ boto3
 supabase
 dotenv
 click
+matplotlib
+seaborn
+scipy

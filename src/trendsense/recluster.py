@@ -3,6 +3,7 @@ from clustering import *
 model = SentenceTransformer("all-mpnet-base-v2")
 import os
 import pandas as pd
+from scraper.retrieval import *
 
 article_dir = "_articles"
 article_paths = os.listdir(article_dir)
@@ -19,7 +20,17 @@ for path in article_paths:
     articles.append(cleaned)
     article_bodies.extend(cleaned["body"].astype(str).tolist())
 
-articles = pd.concat(articles, ignore_index=True)
+# articles = pd.concat(articles, ignore_index=True)
+
+# getting the articles 
+articles = pd.read_csv('articles_new.csv')
+
+# get the article bodies
+
+
+cleaned = articles[articles["body"].notna()]
+article_bodies.extend(cleaned["body"].astype(str).tolist())
+
 
 # l0 (embeddings)
 embeddings_l0 = model.encode(

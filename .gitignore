@@ -9,3 +9,4 @@ api_key.txt
 src/trendsense.egg-info/
 test.ipynb
 *.DS_Store
+.DS_Store/
