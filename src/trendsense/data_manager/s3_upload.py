@@ -35,6 +35,11 @@ def initialise_temp_log(mode: str):
             fh.write("batch_date,summary_s3_key\n")
             print("Successfully created temp_log file")
             fh.close()
+    elif mode == 'cluster_centroids':
+        with open(config.TEMP_CENTROIDS_LOG_CSV, 'w') as fh:
+            fh.write("batch_date,centroid_s3_key\n")
+            print("Successfully created temp_log file")
+            fh.close()
 
 
 def get_supabase_client():
@@ -152,4 +157,39 @@ def summary_embs_s3_upload(input_path, ingested_date):
     with open(config.TEMP_SUMMARY_VEC_LOG_CSV, 'a') as fh:
         fh.write(f"{batch_date},{s3_key}\n")
 
-    print(f"Uploaded title embeddings to s3://{config.S3_BUCKET}/{s3_key}")
+    print(f"Uploaded summary embeddings to s3://{config.S3_BUCKET}/{s3_key}")
+
+
+def centroid_s3_uploads(input_path, created_date, max_level):
+    """Upload Cluster Centroids to S3"""
+
+    s3_client = boto3.client('s3')
+
+    initialise_temp_log('cluster_centroids')
+    if input_path:
+        centroid_path = input_path
+    else:
+        centroid_path = config.CENTROID_PATH
+    if not centroid_path.exists():
+        raise FileNotFoundError(f"Path not found: {centroid_path}")
+    
+    batch_date = created_date.isoformat()
+
+    for level in range(1, max_level + 1):
+        file_name = centroid_path / f"l{level}_centroids.npy"
+        s3_key = f"{config.S3_CENTROID_PREFIX}/l{level}_centroids.npy"
+
+        if not file_name.exists():
+            raise FileNotFoundError(f"File missing: {file_name}")
+
+        s3_client.upload_file(
+        Filename=str(file_name),
+        Bucket=config.S3_BUCKET,
+        Key=s3_key,
+        )
+        with open(config.TEMP_CENTROIDS_LOG_CSV, 'a') as fh:
+            fh.write(f"{batch_date},{s3_key}\n")
+        
+        print(f"Uploaded l{level} cluster centroids to s3://{config.S3_BUCKET}/{s3_key}")
+
+    print("Uploaded all Centroids to S3")

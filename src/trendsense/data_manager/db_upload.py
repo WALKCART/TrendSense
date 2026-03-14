@@ -93,3 +93,13 @@ def vec_db_upload(created_date):
         supabase.table(config.ARTICLES_DB).update({"embedded": True}).in_("art_id", batch).execute()
     print(f"Inserted {len(rows)} vector batch records ")
     print(f"and marked {len(art_ids)} articles as embedded")
+
+def art_clust_map_db_upload(input_path, date):
+    supabase = get_supabase_client()
+
+    if input_path:
+        input_path = input_path
+    else:
+        input_path = config.ART_CLUST_MAP_PATH
+    
+    map_df = pd.read_csv(input_path)

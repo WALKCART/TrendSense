@@ -35,6 +35,7 @@ DATA_BUFFER_DIR = BASE_DIR / "DataBuffer"
 VECTORS_OUTPUT_PATH = DATA_BUFFER_DIR / "_vectors"
 CLUSTERS_OUTPUT_PATH = DATA_BUFFER_DIR / "_clusters"
 CLUSTERS_MAP_PATH = DATA_BUFFER_DIR / "_clusters" / "article_cluster_map.parquet"
+CLUSTERS_TABLE_PATH = DATA_BUFFER_DIR / "_clusters" / "cluster_table.csv"
 
 
 # Clustering configuration per level

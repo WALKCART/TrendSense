@@ -23,7 +23,6 @@ def get_supabase_client():
 
     return create_client(url, key)
 
-
 def fetch_unembedded_articles(page_size: int = 1000) -> pd.DataFrame:
     """
     Fetch articles that have not yet been embedded.
@@ -65,6 +64,23 @@ def fetch_unembedded_articles(page_size: int = 1000) -> pd.DataFrame:
 
     return df
 
+def fetch_unclustered_articles() -> pd.DataFrame:
+    """
+    Fetches articles which have been embedded but not yet clustered.
+
+    Returns:
+        art_id: Article Id
+        published: Publishing date of the article
+        title: Title of the article
+    """
+    supabase = get_supabase_client()
+
+    response = supabase.rpc("get_unclustered_articles").execute()
+
+    data = cast(List[Dict[str, Any]], response.data or [])
+
+    return pd.DataFrame(data)
+    
 
 def fetch_summaries(records: Iterable[tuple[str, str]]) -> pd.DataFrame:
     """
@@ -128,17 +144,20 @@ def fetch_title_embs() -> pd.DataFrame:
     """
 
     supabase = get_supabase_client()
+    meta_df = fetch_unclustered_articles()
+    if meta_df.empty:
+        return pd.DataFrame()
+    meta_df["published"] = pd.to_datetime(meta_df["published"])
+
     response = supabase.rpc("get_distinct_ingested_dates").execute()
     response = cast(List[Dict[str, Any]], response.data or [])
     ingested_dates = [res['ingested_date'] for res in response]
-
     if not ingested_dates:
         return pd.DataFrame()
     
     vectors_res = supabase.table(config.VECTORS_DB).select("title_s3_key").in_("batch_date", ingested_dates).execute()
     vectors_data = cast(List[Dict[str, Any]], vectors_res.data or [])
     title_s3_keys = [record['title_s3_key'] for record in vectors_data]
-
     if not title_s3_keys:
         return pd.DataFrame()
     
@@ -157,5 +176,8 @@ def fetch_title_embs() -> pd.DataFrame:
     if not dfs:
         return pd.DataFrame()
 
-    return pd.concat(dfs, ignore_index=True)
+    emb_df = pd.concat(dfs, ignore_index=True)
+    title_df = emb_df.merge(meta_df, on="art_id", how="inner")
+
+    return title_df
 

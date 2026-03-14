@@ -1,4 +1,5 @@
-from persistence import *
+import pandas as pd
+from trendsense.clustering.cluster_metrics import *
 
 # getting the dataset (only the required columns)
 clusters = pd.read_csv('hierarchical_clustered_articles_2.csv')\

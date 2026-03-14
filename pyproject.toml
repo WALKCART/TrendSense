@@ -27,7 +27,10 @@ dependencies = [
     "hdbscan",
     "boto3",
     "supabase",
-    "python-dotenv"
+    "python-dotenv",
+    "matplotlib", 
+    "seaborn",
+    "spacy"
 ]
 
 [project.scripts]

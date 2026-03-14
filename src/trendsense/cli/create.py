@@ -57,10 +57,7 @@ def create_clusters(level, max_level, output_path):
     
     title_embs_df = fetch_title_embs()
     # load or initialize cluster map
-    if CLUSTERS_MAP_PATH.exists():
-        article_cluster_map = pd.read_parquet(CLUSTERS_MAP_PATH)
-    else:
-        article_cluster_map = title_embs_df[["art_id"]].copy()
+    article_cluster_map = title_embs_df[["art_id", "published", "title"]].copy()
 
     embeddings_l0 = np.vstack(title_embs_df["embedding"].to_list()).astype("float32")
 
@@ -73,72 +70,50 @@ def create_clusters(level, max_level, output_path):
     centroids_l3 = None
 
     for lvl in levels:
-
         if lvl == 1:
-
             click.echo("Running L1 clustering...")
-
             if "l1_cluster_id" not in article_cluster_map.columns:
-
                 centroids_l1, _ = get_l1_clusters(
                     embeddings_l0,
                     article_cluster_map
                 )
-
         elif lvl == 2:
-
             click.echo("Running L2 clustering...")
-
             if "l2_cluster_id" not in article_cluster_map.columns:
-
                 centroids_l1 = np.load(output_path / "l1_centroids.npy")
-
                 valid_l1_ids = sorted(
                     article_cluster_map["l1_cluster_id"]
                     .loc[article_cluster_map["l1_cluster_id"] != -1]
                     .unique()
                 )
-
                 centroids_l2, _ = get_l2_clusters(
                     centroids_l1,
                     valid_l1_ids,
                     article_cluster_map
                 )
-
         elif lvl == 3:
-
             click.echo("Running L3 clustering...")
-
             if "l3_cluster_id" not in article_cluster_map.columns:
-
                 centroids_l2 = np.load(output_path / "l2_centroids.npy")
-
                 valid_l2_ids = sorted(
                     article_cluster_map["l2_cluster_id"]
                     .loc[article_cluster_map["l2_cluster_id"] != -1]
                     .unique()
                 )
-
                 centroids_l3, _ = get_l3_clusters(
                     centroids_l2,
                     valid_l2_ids,
                     article_cluster_map
                 )
-
         elif lvl == 4:
-
             click.echo("Running L4 clustering...")
-
             if "l4_cluster_id" not in article_cluster_map.columns:
-
                 centroids_l3 = np.load(output_path / "l3_centroids.npy")
-
                 valid_l3_ids = sorted(
                     article_cluster_map["l3_cluster_id"]
                     .loc[article_cluster_map["l3_cluster_id"] != -1]
                     .unique()
                 )
-
                 get_l4_clusters(
                     centroids_l3,
                     valid_l3_ids,
@@ -152,3 +127,5 @@ def create_clusters(level, max_level, output_path):
     )
 
     click.echo("Clustering complete.")
+
+

@@ -5,8 +5,92 @@ import hdbscan
 import os
 import numpy as np
 from numpy.typing import NDArray
-from typing import Tuple, List, Optional, cast
+from typing import Tuple, List, Dict, Optional, cast
 from . import config
+import re
+from collections import Counter
+import spacy
+from trendsense.data_manager.db_upload import get_supabase_client
+from trendsense.clustering.cluster_metrics import get_half_life, get_bursts
+
+
+# add the function to find the last id of that level and then make ids from that only
+# fetch the last serial number
+nlp = spacy.load("en_core_web_sm", disable=["parser", "ner"])
+
+
+def get_last_cluster_ids() -> Dict:
+    """
+    Fetch the maximum cluster_id for each level from ClustersDB.
+    Returns dict {level: max_cluster_id}
+    """
+    supabase = get_supabase_client()
+    res = (
+        supabase.table("ClustersDB")
+        .select("cluster_id,level")
+        .execute()
+    )
+
+    data = res.data or []
+
+    if not data:
+        return {1:0,2:0,3:0,4:0}
+
+    df = pd.DataFrame(data)
+
+    last_ids = {}
+
+    for lvl in [1,2,3,4]:
+        if lvl not in df["level"].values:
+            last_ids[lvl] = 0
+        else:
+            last_ids[lvl] = df.loc[df["level"] == lvl,"cluster_id"].max()
+
+    return last_ids
+
+
+def preprocess(text):
+
+    JUNK_WORDS = {
+    "reuters", "reuter", "business","standard","say","says","report",
+    "million","billion","crore","year","day","week",
+    "update","live","latest","news","amp"
+    }
+
+    if not isinstance(text, str):
+        return []
+
+    text = text.lower()
+
+    # remove wire prefixes
+    text = re.sub(r"^(reuters|business standard|ap news)\s*[-:]", "", text)
+
+    # remove punctuation/numbers
+    text = re.sub(r"[^a-z\s]", " ", text)
+
+    doc = nlp(text)
+
+    tokens = []
+
+    for token in doc:
+
+        lemma = token.lemma_.strip()
+
+        if token.is_stop:
+            continue
+
+        if len(lemma) < 3:
+            continue
+
+        if lemma in JUNK_WORDS:
+            continue
+
+        tokens.append(lemma)
+
+    # remove duplicates while preserving order
+    tokens = list(dict.fromkeys(tokens))
+
+    return tokens
 
 
 def run_clustering(embeddings, level):
@@ -87,6 +171,7 @@ def compute_and_save_centroids(embeddings: NDArray[np.float32], labels: NDArray[
 
     return centroid_array, cluster_ids
 
+
 def get_l1_clusters(embeddings_l0: NDArray[np.float32], articles: pd.DataFrame):
     """Cluster raw article embeddings and attach ``l1_cluster_id`` to ``articles``.
 
@@ -100,6 +185,7 @@ def get_l1_clusters(embeddings_l0: NDArray[np.float32], articles: pd.DataFrame):
         f"{config.CLUSTERS_OUTPUT_PATH}/l1_centroids.npy"
     )
     return centroids_l1, valid_l1_ids
+
 
 def get_l2_clusters(centroids_l1, valid_l1_ids, articles):
     """Cluster level‑1 centroids and assign ``l2_cluster_id`` to ``articles``.
@@ -136,6 +222,7 @@ def get_l2_clusters(centroids_l1, valid_l1_ids, articles):
 
     return centroids_l2, valid_l2_ids
 
+
 def get_l3_clusters(centroids_l2, valid_l2_ids, articles):
     """Build a third-level clustering from level‑2 centroids.
 
@@ -170,6 +257,7 @@ def get_l3_clusters(centroids_l2, valid_l2_ids, articles):
 
     return centroids_l3, valid_l3_ids
 
+
 def get_l4_clusters(centroids_l3, valid_l3_ids, articles):
     """Perform a fourth-level clustering based on level‑3 centroids.
 
@@ -202,3 +290,131 @@ def get_l4_clusters(centroids_l3, valid_l3_ids, articles):
         valid_l4_ids = None
 
     return centroids_l4, valid_l4_ids
+
+
+def get_cluster_names(titles):
+    token_counts = Counter()
+    phrase_counts = Counter()
+
+    for title in titles:
+
+        tokens = preprocess(title)
+
+        if not tokens:
+            continue
+
+        token_counts.update(tokens)
+
+        # build bigrams
+        bigrams = [" ".join(bg) for bg in zip(tokens, tokens[1:])]
+        phrase_counts.update(bigrams)
+
+    # get strongest phrase first
+    if phrase_counts:
+        phrase, _ = phrase_counts.most_common(1)[0]
+        words = phrase.split()
+    else:
+        words = []
+
+    # add strong single tokens
+    for token, _ in token_counts.most_common(5):
+
+        if token not in words:
+            words.append(token)
+
+        if len(words) >= 4:
+            break
+
+    if not words:
+        return "unknown"
+
+    return " ".join(words[:4])
+
+
+def get_clusters_table(cluster_map_path, output_path):
+    if not cluster_map_path:
+        cluster_map_path = config.CLUSTERS_MAP_PATH
+    if not output_path:
+        output_path = config.CLUSTERS_TABLE_PATH
+
+    df = pd.read_parquet(cluster_map_path)
+
+    results = []
+
+    levels = [
+        ("l1_cluster_id", "l2_cluster_id", 1),
+        ("l2_cluster_id", "l3_cluster_id", 2),
+        ("l3_cluster_id", "l4_cluster_id", 3),
+        ("l4_cluster_id", None, 4),
+    ]
+
+    for cluster_col, parent_col, level in levels:
+
+        if cluster_col not in df.columns:
+            continue
+
+        valid = df[df[cluster_col] != -1]
+
+        if valid.empty:
+            continue
+        
+        grouped = valid.groupby(cluster_col)
+
+        for cluster_id, g in grouped:
+
+            parent_cluster = None
+            parent_level = None
+
+            if parent_col and parent_col in g.columns:
+                parent_vals = g[parent_col].values
+                # Filter out noise (-1)
+                parent_vals = parent_vals[parent_vals != -1]
+
+                if len(parent_vals) > 0:
+                    # All items in a sub-cluster belong to the same parent cluster
+                    parent_cluster = int(parent_vals[0])
+                    parent_level = level + 1
+
+            # Get cluster name from top titles
+            titles = g["title"].dropna().head(50).tolist()
+            cluster_name = get_cluster_names(titles)
+
+            # Calculate persistence metrics
+            half_life = get_half_life(
+                g[["published", cluster_col]]
+                .copy()
+                .rename(columns={cluster_col: "l1_cluster_id"}),
+                cluster_id
+            )
+
+            # Calculate burst score
+            bursts = get_bursts(
+                g[["published"]].copy(),
+                cluster_id
+            )
+
+            results.append(
+                {
+                    "cluster_id": int(cluster_id),
+                    "level": level,
+                    "cluster_name": cluster_name,
+                    "parent_cluster_id": parent_cluster,
+                    "parent_level": parent_level,
+                    "created_date": g["published"].min(),
+                    "last_updated": g["published"].max(),
+                    "article_count": len(g),
+                    "half_life": half_life,
+                    "bursts": bursts,
+                }
+            )
+
+    clusters_df = pd.DataFrame(results)
+
+    clusters_df.sort_values(
+        ["level", "cluster_id"],
+        inplace=True
+    )
+
+    clusters_df.to_csv(output_path, index=False)
+
+    return clusters_df

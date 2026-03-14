@@ -15,9 +15,9 @@ sns.set_palette(colors)
 
 def get_half_life(clusters, cluster_id, get_visualization=False):
     # getting the date
-    clusters['date'] = clusters.published.apply(lambda x: x.split(' ')[0])
-    clusters.drop(columns=['published'], inplace=True)
-    clusters['date'] = pd.to_datetime(clusters['date'])
+    clusters["date"] = pd.to_datetime(clusters["published"]).dt.date
+    clusters.drop(columns=["published"], inplace=True)
+    clusters["date"] = pd.to_datetime(clusters["date"])
 
     # sorting by date 
     clusters = clusters.sort_values(
@@ -69,3 +69,38 @@ def get_half_life(clusters, cluster_id, get_visualization=False):
 
         fig.savefig('test.png', dpi=300)
     return half_life
+
+def get_bursts(clusters, cluster_id, recent_days=2, baseline_days=7):
+    """
+    Compute burst score for a cluster based on recent article activity.
+
+    burst_score = recent_rate / baseline_rate
+    """
+    if clusters.empty:
+        return 0.0
+
+    # ensure datetime
+    clusters["published"] = pd.to_datetime(clusters["published"])
+
+    # daily counts
+    clusters["date"] = clusters["published"].dt.normalize()
+    daily_counts = clusters.groupby("date").size().sort_index()
+
+    if len(daily_counts) < 2:
+        return 0.0
+
+    last_date = daily_counts.index.max()
+
+    recent_start = last_date - pd.Timedelta(days=recent_days - 1)
+    baseline_start = last_date - pd.Timedelta(days=recent_days + baseline_days - 1)
+
+    recent = daily_counts.loc[recent_start:last_date].sum()
+    baseline = daily_counts.loc[baseline_start:recent_start - pd.Timedelta(days=1)].sum()
+
+    recent_rate = recent / max(recent_days, 1)
+    baseline_rate = baseline / max(baseline_days, 1)
+
+    if baseline_rate == 0:
+        return float(recent_rate)
+
+    return float(recent_rate / baseline_rate)
