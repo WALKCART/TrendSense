@@ -10,9 +10,10 @@ from bs4 import BeautifulSoup
 from tqdm import tqdm
 from pathlib import Path
 
-def load_sources():
-    base_dir = Path(__file__).resolve().parent
-    sources_path = base_dir / "sources.csv"
+def load_sources(sources_path=None):
+    if sources_path is None:
+        base_dir = Path(__file__).resolve().parent
+        sources_path = base_dir / "sources.csv"
 
     db = pd.read_csv(sources_path)
 

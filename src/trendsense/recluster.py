@@ -4,22 +4,30 @@ model = SentenceTransformer("all-mpnet-base-v2")
 import os
 import pandas as pd
 
-article_dir = "_articles"
-article_paths = os.listdir(article_dir)
+# article_dir = "_articles"
+# article_paths = os.listdir(article_dir)
 
-articles = []
+# articles = []
 article_bodies = []
 
-for path in article_paths:
-    df = pd.read_csv(os.path.join(article_dir, path))
-    if "body" not in df.columns:
-        continue
+# for path in article_paths:
+#     df = pd.read_csv(os.path.join(article_dir, path))
+#     if "body" not in df.columns:
+#         continue
 
-    cleaned = df[df["body"].notna()]
-    articles.append(cleaned)
-    article_bodies.extend(cleaned["body"].astype(str).tolist())
+#     cleaned = df[df["body"].notna()]
+#     articles.append(cleaned)
+#     article_bodies.extend(cleaned["body"].astype(str).tolist())
 
-articles = pd.concat(articles, ignore_index=True)
+# articles = pd.concat(articles, ignore_index=True)
+
+# getting the articles 
+articles = pd.read_csv('articles_new.csv')
+
+# get the article bodies
+cleaned = articles[articles["title"].notna()]
+article_bodies.extend(cleaned["title"].astype(str).tolist())
+
 
 # l0 (embeddings)
 embeddings_l0 = model.encode(
@@ -44,4 +52,4 @@ centroids_l3, valid_l3_ids = get_l3_clusters(centroids_l2, valid_l2_ids, article
 centroids_l4, valid_l4_ids = get_l4_clusters(centroids_l3, valid_l3_ids, articles)
 
 
-articles.to_csv("hierarchical_clustered_articles.csv", index=False)
+articles.to_csv("hierarchical_clustered_articles_2.csv", index=False)
